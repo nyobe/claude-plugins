@@ -1,0 +1,13 @@
+{
+  "name": "nyobe",
+  "owner": {
+    "name": "Claire Gaestel"
+  },
+  "plugins": [
+    {
+      "name": "jj-pairing-with-claude",
+      "source": "./jj-pairing-with-claude",
+      "description": "jj workspace integration for Claude Code worktrees"
+    }
+  ]
+}

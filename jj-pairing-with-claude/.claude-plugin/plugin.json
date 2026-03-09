@@ -1,0 +1,8 @@
+{
+  "name": "jj-pairing-with-claude",
+  "description": "jj workspace integration for Claude Code worktrees — automatic snapshotting, stale workspace detection, and collaborative editing via jj's mega-merge workflow. Run /setup after installing to configure WorktreeCreate/Remove hooks.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Claire Gaestel"
+  }
+}
