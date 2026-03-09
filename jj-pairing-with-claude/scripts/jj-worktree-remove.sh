@@ -2,14 +2,11 @@
 set -euo pipefail
 
 # Claude Code WorktreeRemove hook
-# Cleans up a jj workspace and any git worktree scaffold, then migrates
-# the worktree's Claude Code sessions into the parent project so they
-# remain accessible via --resume.
+# Cleans up a jj workspace and any git worktree scaffold.
 #
 # Input (JSON on stdin):
 #   { "worktree_path": "...", "cwd": "...", "session_id": "...", ... }
 
-PLUGIN_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 INPUT=$(cat)
 WPATH=$(echo "$INPUT" | jq -r '.worktree_path')
 CWD=$(echo "$INPUT" | jq -r '.cwd')
