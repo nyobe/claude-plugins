@@ -35,10 +35,16 @@ Always `jj new` after `jj describe` — this keeps the described commit clean
 and gives you a fresh working copy for further edits.
 
 ## Collaboration
-The user may edit your working commit from their main workspace. The snapshot
-hook runs `jj workspace update-stale` automatically before each snapshot, so
-you will pick up their changes on your next edit. If you need to pick up
-changes manually, run `jj workspace update-stale`.
+The user may edit your working commit from their main workspace. A sync hook
+runs automatically before you process each prompt, pulling in their changes.
+You'll be told which files changed so you can re-read them.
+
+The user may also leave inline comments for you using the `CLAUDE:` convention:
+    # CLAUDE: use bcrypt here instead of plaintext
+    // CLAUDE: this function needs error handling
+    -- CLAUDE: add an index for this query
+When you see these in the sync summary, address them and then remove the
+CLAUDE: comments from the code.
 EOF
     ;;
 esac
