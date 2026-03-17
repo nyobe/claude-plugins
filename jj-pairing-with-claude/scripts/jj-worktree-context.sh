@@ -21,8 +21,13 @@ tool call, making your changes visible to the user as a jj change. You do not
 need to commit manually to save work.
 
 ## Workspace naming
-Please rename this workspace to a short description of your task:
-    jj workspace rename <short-kebab-case-description>
+Rename this workspace to a short description of your task, prefixed with the
+worktree directory name so `jj workspace list` shows which physical directory
+each workspace lives in:
+    jj workspace rename $(basename "$PWD")/<short-kebab-case-description>
+For example, if your directory is `gentle-leaping-clarke` and you're fixing
+auth timeouts:
+    jj workspace rename gentle-leaping-clarke/fix-auth-timeouts
 
 ## Viewing your changes
 `git status` may be out of sync — use `jj status` or `jj diff` instead.
