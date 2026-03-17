@@ -37,7 +37,16 @@ When your work is ready, describe the commit and create a fresh working copy:
     jj describe -m "description of changes"
     jj new
 Always `jj new` after `jj describe` — this keeps the described commit clean
-and gives you a fresh working copy for further edits.
+and gives you a fresh working copy for further edits. (A safeguard in the
+snapshot hook also facilitates this: if it detects a described working copy, it
+automatically runs `jj new` before snapshotting to avoid unintentional edits.)
+
+## Modifying previous commits
+Prefer squashing changes into a target commit rather than using `jj edit` —
+the snapshot hook will interfere with mutating described commits.
+    jj squash --into <commit>
+Or to move only specific files:
+    jj squash --into <commit> <path>...
 
 ## Collaboration
 The user may edit your working commit from their main workspace. A sync hook
