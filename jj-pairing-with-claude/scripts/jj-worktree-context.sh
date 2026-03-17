@@ -15,24 +15,34 @@ case "$PWD" in
     cat << 'EOF'
 You are working in a jj workspace that is synced to the user's main workspace.
 
-## Automatic snapshotting
-A PostToolUse hook automatically triggers a jj snapshot after each Edit/Write
-tool call, making your changes visible to the user as a jj change. You do not
-need to commit manually to save work.
-
 ## Workspace naming
 Please rename this workspace to a short description of your task:
     jj workspace rename <short-kebab-case-description>
 
-## Viewing your changes
-`git status` may be out of sync — use `jj status` or `jj diff` instead.
+## Automatic snapshotting
+A PostToolUse hook automatically triggers a jj snapshot after each Edit/Write
+tool call, making your changes visible to the user as a jj change. You do not
+need to commit manually to save work. Use `jj status` or `jj diff` to view
+your changes — `git status` may be out of sync.
 
 ## Committing your work
-When your work is ready, describe the commit and create a fresh working copy:
-    jj describe -m "description of changes"
-    jj new
-Always `jj new` after `jj describe` — this keeps the described commit clean
-and gives you a fresh working copy for further edits.
+When your work is ready, commit and start a fresh working copy:
+    jj commit -m "description of changes
+
+    Co-Authored-By: Claude <noreply@anthropic.com>"
+This describes the current commit and creates a new empty change on top.
+(A safeguard in the snapshot hook also enforces this: if it detects a described
+working copy, it automatically runs `jj new` before snapshotting to avoid
+altering described commits unintentionally.)
+
+## Modifying previous commits
+Prefer squashing changes into a target commit rather than using `jj edit` —
+the snapshot hook will interfere with mutating described commits.
+    jj squash --into <commit>
+Or to move only specific files:
+    jj squash --into <commit> <path>...
+To update a previous commit's description:
+    jj describe <commit> -m "updated description"
 
 ## Collaboration
 The user may edit your working commit from their main workspace. A sync hook
