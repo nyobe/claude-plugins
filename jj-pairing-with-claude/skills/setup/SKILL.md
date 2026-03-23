@@ -10,9 +10,8 @@ disable-model-invocation: true
 WorktreeCreate and WorktreeRemove hooks can't be loaded from a plugin, so this
 skill installs them into the user's Claude Code settings.
 
-These hooks handle jj workspace creation/removal. For git worktree scaffolding
-(needed by repos with submodules or git-dependent tooling), use the
-`setup-project` skill separately.
+These hooks handle jj workspace creation/removal. Git worktree scaffolding is
+done automatically during worktree creation for colocated git+jj repos.
 
 ## Steps
 
@@ -61,4 +60,3 @@ These hooks handle jj workspace creation/removal. For git worktree scaffolding
 
 4. Show the user what was added and where, and confirm the installation succeeded.
 5. Tell the user to restart Claude Code for the hooks to take effect.
-6. Suggest running `/setup-project` if their repo needs git worktree scaffolding.

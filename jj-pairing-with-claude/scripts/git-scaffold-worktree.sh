@@ -24,8 +24,8 @@ fi
 MAIN_GIT="$(cd "$DIR/../../.." && pwd)/.git"
 
 if [ ! -d "$MAIN_GIT" ]; then
-  echo "git-scaffold-worktree: could not find .git directory at $MAIN_GIT" >&2
-  exit 1
+  # Not a colocated git+jj repo — nothing to scaffold.
+  exit 0
 fi
 
 WKTREE_GIT="$MAIN_GIT/worktrees/$NAME"

@@ -79,21 +79,11 @@ The WorktreeCreate and WorktreeRemove hooks can't be loaded from a plugin — th
 
 This installs hooks into your global or project settings. Restart Claude Code afterward.
 
-### 3. (Optional) Set up git worktree scaffolding
-
-If your project has git submodules or git-dependent tooling, run:
-
-```
-/setup-project
-```
-
-This creates a project-level SessionStart hook that scaffolds a git worktree entry so tools like `git submodule`, `make`, etc. work inside the jj workspace. You can also customize the generated script to warm dependencies (e.g., `go mod download`, `yarn install`).
-
 ## What each hook does
 
 | Hook | Trigger | Script | Purpose |
 |------|---------|--------|---------|
-| **WorktreeCreate** | `EnterWorktree` | `jj-worktree-create.sh` | Creates jj workspace at `.claude/worktrees/<name>` |
+| **WorktreeCreate** | `EnterWorktree` | `jj-worktree-create.sh` | Creates jj workspace at `.claude/worktrees/<name>`, scaffolds git worktree for colocated repos |
 | **WorktreeRemove** | Worktree exit | `jj-worktree-remove.sh` | Forgets workspace, cleans up directory |
 | **PostToolUse** | After Edit/Write | `jj-snapshot.sh` | Snapshots changes so they're visible in `jj log` |
 | **UserPromptSubmit** | Before each prompt | `jj-workspace-sync.sh` | Detects stale workspace, syncs user changes |

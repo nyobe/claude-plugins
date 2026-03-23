@@ -25,4 +25,9 @@ jj workspace add "$DIR" --name "$NAME" -r "trunk()" >&2
 # Hide .jj from git (mimic what jj does in colocated repos)
 echo '/*' > "$DIR/.jj/.gitignore"
 
+# Scaffold a git worktree entry so git-dependent tools (and Claude Code's
+# repo-root detection) resolve to the workspace directory, not the parent repo.
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+"$SCRIPT_DIR/git-scaffold-worktree.sh" "$DIR" >&2
+
 echo "$DIR"
