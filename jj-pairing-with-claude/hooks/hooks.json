@@ -9,6 +9,15 @@
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/jj-snapshot.sh"
           }
         ]
+      },
+      {
+        "matcher": "EnterWorktree",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/jj-worktree-context.sh"
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [
@@ -22,6 +31,16 @@
       }
     ],
     "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/jj-worktree-context.sh"
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
       {
         "hooks": [
           {

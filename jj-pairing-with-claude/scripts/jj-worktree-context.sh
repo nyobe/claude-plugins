@@ -1,18 +1,33 @@
 #!/usr/bin/env bash
 
-# Claude Code SessionStart hook
-# If the session is inside a worktree, emits context about the snapshotting
-# setup so the agent understands its environment.
+# Injects jj workspace context into the agent's conversation.
 #
-# Text written to stdout is injected into the agent's conversation context.
+# Registered as three hooks:
+#   SessionStart         — covers `claude --worktree`
+#   PostToolUse(EnterWorktree) — covers interactive worktree entry
+#   SubagentStart        — covers subagents spawned in worktrees
+#
+# Output format depends on hook type:
+#   SessionStart → plain text on stdout
+#   PostToolUse/SubagentStart → JSON with additionalContext
 
+INPUT=$(cat)
+EVENT=$(echo "$INPUT" | jq -r '.hook_event_name // empty')
+
+# Only activate inside a jj worktree
 case "$PWD" in
   */.claude/worktrees/*)
     if [ ! -d "$PWD/.jj" ]; then
       echo "This worktree is not a jj workspace. Run /setup to install the WorktreeCreate hook." >&2
       exit 2
     fi
-    cat << 'EOF'
+    ;;
+  *)
+    exit 0
+    ;;
+esac
+
+CONTEXT=$(cat <<'EOF'
 You are working in a jj workspace that is synced to the user's main workspace.
 
 ## Workspace naming
@@ -56,5 +71,20 @@ The user may also leave inline comments for you using the `CLAUDE:` convention:
 When you see these in the sync summary, address them and then remove the
 CLAUDE: comments from the code.
 EOF
+)
+
+case "$EVENT" in
+  PostToolUse|SubagentStart)
+    jq -n --arg ctx "$CONTEXT" --arg event "$EVENT" '{
+      hookSpecificOutput: {
+        hookEventName: $event,
+        additionalContext: $ctx
+      }
+    }'
+    ;;
+  *)
+    # SessionStart (and any other hook) injects stdout directly
+    echo "$CONTEXT"
     ;;
 esac
+
