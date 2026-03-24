@@ -68,8 +68,9 @@ The user may also leave inline comments for you using the `CLAUDE:` convention:
     # CLAUDE: use bcrypt here instead of plaintext
     // CLAUDE: this function needs error handling
     -- CLAUDE: add an index for this query
-When you see these in the sync summary, address them and then remove the
-CLAUDE: comments from the code.
+When you see these in the sync summary, ask clarifying questions if anything
+is ambiguous before proceeding. Remove the CLAUDE: comments from the code as
+you address them.
 EOF
 )
 
