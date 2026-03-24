@@ -27,8 +27,34 @@ case "$PWD" in
     ;;
 esac
 
-CONTEXT=$(cat <<'EOF'
-You are working in a jj workspace that is synced to the user's main workspace.
+# Subagents only need path guidance — exit early with a focused message.
+if [ "$EVENT" = "SubagentStart" ]; then
+    PARENT_REPO="${PWD%%/.claude/worktrees/*}"
+
+    SUBAGENT_CTX="You are working in a git worktree. All files live under:
+    $PWD
+When constructing absolute paths, ALWAYS use that root.
+
+IMPORTANT: Do NOT use the parent repository at:
+    $PARENT_REPO
+That path points to a different checkout. Searching or reading files there
+will return the wrong content. The .claude/worktrees/ component is part of
+the correct path — never strip it."
+
+    jq -n --arg ctx "$SUBAGENT_CTX" '{
+      hookSpecificOutput: {
+        hookEventName: "SubagentStart",
+        additionalContext: $ctx
+      }
+    }'
+    exit 0
+fi
+
+CONTEXT=$(cat <<EOF
+You are working in a git worktree — an isolated copy of the repository with its
+own branch checkout. It is also a jj workspace that is synced to the user's main workspace.
+Please run all commands from within this directory ($PWD) instead of the
+original repository root.
 
 ## Workspace naming
 Please rename this workspace to a short description of your task:
@@ -75,7 +101,7 @@ EOF
 )
 
 case "$EVENT" in
-  PostToolUse|SubagentStart)
+  PostToolUse)
     jq -n --arg ctx "$CONTEXT" --arg event "$EVENT" '{
       hookSpecificOutput: {
         hookEventName: $event,
