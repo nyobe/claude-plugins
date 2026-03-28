@@ -12,10 +12,15 @@
 
 case "$PWD" in
   */.claude/worktrees/*)
-    # jj status exits non-zero if the workspace is stale
-    if ! jj status > /dev/null 2>&1; then
-      # Capture the pre-update commit so we can diff against it
-      OLD_COMMIT=$(jj log -r @ --no-graph -T commit_id 2>/dev/null)
+    # jj status exits non-zero if the workspace is stale, and the error
+    # message includes the operation ID from when the working copy was
+    # last updated: "not updated since operation <hex>".
+    STATUS_ERR=$(jj status 2>&1)
+    if [ $? -ne 0 ]; then
+      # Extract the stale operation ID, then resolve @ at that operation
+      # to find the pre-rewrite commit.
+      STALE_OP=$(echo "$STATUS_ERR" | sed -n 's/.*operation \([a-f0-9]*\)).*/\1/p')
+      OLD_COMMIT=$(jj --at-op "$STALE_OP" log -r @ --no-graph -T commit_id 2>/dev/null)
 
       jj workspace update-stale > /dev/null 2>&1
 
