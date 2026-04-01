@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Injects jj workspace context into the agent's conversation.
+# Injects jj workspace context into the agent conversation.
 #
 # Registered as three hooks:
 #   SessionStart         — covers `claude --worktree`
@@ -27,11 +27,10 @@ case "$PWD" in
     ;;
 esac
 
-# Subagents only need path guidance — exit early with a focused message.
-if [ "$EVENT" = "SubagentStart" ]; then
+subagent_context() {
     PARENT_REPO="${PWD%%/.claude/worktrees/*}"
-
-    SUBAGENT_CTX="You are working in a git worktree. All files live under:
+    cat <<EOF
+You are working in a git worktree. All files live under:
     $PWD
 When constructing absolute paths, ALWAYS use that root.
 
@@ -39,25 +38,21 @@ IMPORTANT: Do NOT use the parent repository at:
     $PARENT_REPO
 That path points to a different checkout. Searching or reading files there
 will return the wrong content. The .claude/worktrees/ component is part of
-the correct path — never strip it."
+the correct path — never strip it.
+EOF
+}
 
-    jq -n --arg ctx "$SUBAGENT_CTX" '{
-      hookSpecificOutput: {
-        hookEventName: "SubagentStart",
-        additionalContext: $ctx
-      }
-    }'
-    exit 0
-fi
-
-CONTEXT=$(cat <<EOF
+session_context() {
+    cat <<EOF
 You are working in a git worktree — an isolated copy of the repository with its
-own branch checkout. It is also a jj workspace that is synced to the user's main workspace.
+own branch checkout. It is also a jj workspace that is synced to the main workspace.
 Please run all commands from within this directory ($PWD) instead of the
 original repository root.
+EOF
+    cat <<'EOF'
 
 ## Workspace naming
-Please rename this workspace to a short description of your task:
+First, please rename this workspace to a short description of your task:
     jj workspace rename <short-kebab-case-description>
 
 ## Automatic snapshotting
@@ -82,13 +77,13 @@ the snapshot hook will interfere with mutating described commits.
     jj squash --into <commit>
 Or to move only specific files:
     jj squash --into <commit> <path>...
-To update a previous commit's description:
+To update the description of a previous commit:
     jj describe <commit> -m "updated description"
 
 ## Collaboration
 The user may edit your working commit from their main workspace. A sync hook
 runs automatically before you process each prompt, pulling in their changes.
-You'll be told which files changed so you can re-read them.
+The hook will tell you which files changed so you can re-read them.
 
 The user may also leave inline comments for you using the `CLAUDE:` convention:
     # CLAUDE: use bcrypt here instead of plaintext
@@ -98,11 +93,20 @@ When you see these in the sync summary, ask clarifying questions if anything
 is ambiguous before proceeding. Remove the CLAUDE: comments from the code as
 you address them.
 EOF
-)
+}
 
 case "$EVENT" in
+  # Subagents only need path guidance.
+  SubagentStart)
+    jq -n --arg ctx "$(subagent_context)" '{
+      hookSpecificOutput: {
+        hookEventName: "SubagentStart",
+        additionalContext: $ctx
+      }
+    }'
+    ;;
   PostToolUse)
-    jq -n --arg ctx "$CONTEXT" --arg event "$EVENT" '{
+    jq -n --arg ctx "$(session_context)" --arg event "$EVENT" '{
       hookSpecificOutput: {
         hookEventName: $event,
         additionalContext: $ctx
@@ -111,7 +115,7 @@ case "$EVENT" in
     ;;
   *)
     # SessionStart (and any other hook) injects stdout directly
-    echo "$CONTEXT"
+    session_context
     ;;
 esac
 
