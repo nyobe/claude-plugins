@@ -18,9 +18,11 @@ CWD=$(echo "$INPUT" | jq -r '.cwd')
 DIR="$CWD/.claude/worktrees/$NAME"
 
 mkdir -p "$(dirname "$DIR")"
-
-# Create jj workspace (owns the working copy, no divergence issues)
 jj workspace add "$DIR" --name "$NAME" -r "trunk()" >&2
+
+# Record the branchpoint to define the agent's mutable revset. (Read by jj-guard.sh)
+jj -R "$DIR" log -r '@' --no-graph -T 'change_id' > "$DIR/.jj/branchpoint" 2>/dev/null
+chmod 444 "$DIR/.jj/branchpoint"
 
 # Hide .jj from git (mimic what jj does in colocated repos)
 echo '/*' > "$DIR/.jj/.gitignore"
