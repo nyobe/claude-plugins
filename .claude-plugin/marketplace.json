@@ -8,6 +8,11 @@
       "name": "jj-pairing-with-claude",
       "source": "./jj-pairing-with-claude",
       "description": "jj workspace integration for Claude Code worktrees"
+    },
+    {
+        "name": "session-index",
+        "source": "./session-index",
+        "description": "Maintains a directory of symlinks to active Claude Code worktrees across projects, making it easy to find, list, and resume in-progress sessions."
     }
   ]
 }

@@ -1,0 +1,8 @@
+{
+  "name": "session-index",
+  "description": "Maintains a directory of symlinks to active Claude Code worktrees across projects, making it easy to find, list, and resume in-progress sessions.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Claire Gaestel"
+  }
+}
