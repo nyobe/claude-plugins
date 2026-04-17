@@ -17,6 +17,12 @@ CWD=$(echo "$INPUT" | jq -r '.cwd')
 
 DIR="$CWD/.claude/worktrees/$NAME"
 
+# Idempotent: Claude Code re-fires this hook on session resume, so noop if the workspace already exists.
+if [ -d "$DIR/.jj" ]; then
+  echo "$DIR"
+  exit 0
+fi
+
 mkdir -p "$(dirname "$DIR")"
 jj workspace add "$DIR" --name "$NAME" -r "trunk()" >&2
 
