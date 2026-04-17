@@ -11,6 +11,8 @@
 
 # Only applies inside worktrees with a branchpoint
 # (Each workspace records its branchpoint in .jj/branchpoint via jj-worktree-create.sh hook)
+# Resolve symlinks so entry via session-index (~/.claude/workspaces/...) still matches.
+PWD=$(pwd -P)
 case "$PWD" in
   */.claude/worktrees/*) ;;
   *) exit 0 ;;

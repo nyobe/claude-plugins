@@ -10,6 +10,8 @@
 #
 # Staleness detection is handled by the UserPromptSubmit hook (jj-workspace-sync.sh).
 
+# Resolve symlinks so entry via session-index (~/.claude/workspaces/...) still matches.
+PWD=$(pwd -P)
 case "$PWD" in
   */.claude/worktrees/*)
     # If the current commit has a description, create a fresh working copy

@@ -10,6 +10,8 @@
 #
 # Text written to stdout is injected into the agent's conversation context.
 
+# Resolve symlinks so entry via session-index (~/.claude/workspaces/...) still matches.
+PWD=$(pwd -P)
 case "$PWD" in
   */.claude/worktrees/*)
     # jj status exits non-zero if the workspace is stale, and the error

@@ -15,6 +15,8 @@ INPUT=$(cat)
 EVENT=$(echo "$INPUT" | jq -r '.hook_event_name // empty')
 
 # Only activate inside a jj worktree
+# Resolve symlinks so entry via session-index (~/.claude/workspaces/...) still matches.
+PWD=$(pwd -P)
 case "$PWD" in
   */.claude/worktrees/*)
     if [ ! -d "$PWD/.jj" ]; then
