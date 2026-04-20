@@ -38,6 +38,10 @@ case "$PWD" in
         echo ""
       fi
 
+      echo "To see the exact changes the user made, run:"
+      echo "  jj diff --from $OLD_COMMIT"
+      echo ""
+
       # Extract CLAUDE: comments from added lines in the diff.
       # Matches any comment style: # // -- /* or bare CLAUDE:
       NOTES=$(jj diff --from "$OLD_COMMIT" --git 2>/dev/null \
@@ -74,8 +78,6 @@ case "$PWD" in
         echo ""
         echo "Review these comments and ask any clarifying questions before proceeding."
         echo "When you're done addressing a comment, remove the CLAUDE: marker from the code."
-      else
-        echo "Re-read any files you're working with before editing — contents on disk have changed."
       fi
     fi
     ;;
