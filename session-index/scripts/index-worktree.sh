@@ -52,9 +52,11 @@ mkdir -p "$INDEX_DIR"
 # Create symlink (idempotent — update if already exists)
 ln -sfn "$CWD" "$INDEX_DIR/$(basename "$REL_PATH")"
 
-# Copy list script into index root on first run
+# Copy helper scripts into index root on first run
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-if [ ! -f "$INDEX_ROOT/list.sh" ]; then
-  cp "$SCRIPT_DIR/list.sh" "$INDEX_ROOT/list.sh"
-  chmod +x "$INDEX_ROOT/list.sh"
-fi
+for script in list.sh remove.sh; do
+  if [ ! -f "$INDEX_ROOT/$script" ]; then
+    cp "$SCRIPT_DIR/$script" "$INDEX_ROOT/$script"
+    chmod +x "$INDEX_ROOT/$script"
+  fi
+done
