@@ -87,12 +87,18 @@ The user may edit your working commit from their main workspace. A sync hook
 runs automatically before you process each prompt, pulling in their changes.
 The hook will tell you which files changed so you can re-read them.
 
-The user may also leave inline comments for you using the `CLAUDE:` convention:
-    # CLAUDE: use bcrypt here instead of plaintext
-    // CLAUDE: this function needs error handling
-    -- CLAUDE: add an index for this query
+The user may also leave inline comments for you (case-insensitive):
+
+  Single-line (no colon):
+    // claude use bcrypt here instead of plaintext
+
+  Multi-line (colon signals a block — continues until a non-comment line):
+    // claude: error handling
+    // add retries for transient failures
+    // log permanent failures to sentry
+
 When you see these in the sync summary, ask clarifying questions if anything
-is ambiguous before proceeding. Remove the CLAUDE: comments from the code as
+is ambiguous before proceeding. Remove the claude comments from the code as
 you address them.
 EOF
 }

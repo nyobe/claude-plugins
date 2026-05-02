@@ -42,34 +42,72 @@ case "$PWD" in
       echo "  jj diff --from $OLD_COMMIT"
       echo ""
 
-      # Extract CLAUDE: comments from added lines in the diff.
-      # Matches any comment style: # // -- /* or bare CLAUDE:
+      # Extract claude comments from added lines in the diff (case-insensitive).
+      # Two forms:
+      #   // claude <text>    → single-line comment
+      #   // claude: <heading>  → multi-line: accumulates subsequent comment
+      #   // continuation       lines until a non-comment line
       NOTES=$(jj diff --from "$OLD_COMMIT" --git 2>/dev/null \
         | awk '
+          function flush() {
+            if (claude_file != "") {
+              printf "%s:%d:%s\n", claude_file, claude_line, claude_text
+              claude_file = ""
+              claude_text = ""
+              multiline = 0
+            }
+          }
+          function strip_comment(s) {
+            sub(/^[ \t]*/, "", s)
+            sub(/^[#\/\*-]+ */, "", s)
+            sub(/ *[*\/]*$/, "", s)
+            return s
+          }
           /^diff --git/ {
-            # extract filename from "diff --git a/foo b/foo"
+            flush()
             file = $NF
             sub(/^b\//, "", file)
           }
           /^@@/ {
-            # parse new-file line number from "@@ -a,b +N,M @@"
+            flush()
             s = $0
             sub(/.*\+/, "", s)
             sub(/,.*/, "", s)
-            line = s - 1  # will increment on each line
+            line = s - 1
           }
-          /^[^+-]/ { line++; next }  # context line
-          /^-/ { next }              # deleted line (dont count)
+          /^[^+-]/ { flush(); line++; next }
+          /^-/ { next }
           /^\+/ {
             line++
-            if (/CLAUDE:/) {
-              text = $0
-              sub(/^\+[ \t]*/, "", text)           # strip leading +/whitespace
-              sub(/^[#\/\*-]+ *CLAUDE: */, "", text)  # strip comment prefix + CLAUDE:
-              sub(/ *[*\/]*$/, "", text)            # strip trailing */ or //
+            raw = $0; sub(/^\+/, "", raw)
+
+            if (tolower(raw) ~ /claude:/) {
+              flush()
+              text = strip_comment(raw)
+              sub(/^[Cc][Ll][Aa][Uu][Dd][Ee]: */, "", text)
+              claude_file = file
+              claude_line = line
+              claude_text = (text != "") ? " " text : ""
+              multiline = 1
+              next
+            }
+
+            if (multiline) {
+              stripped = raw; sub(/^[ \t]*/, "", stripped)
+              if (stripped ~ /^[#\/\*-]/) {
+                claude_text = claude_text "\n  " strip_comment(raw)
+                next
+              }
+              flush()
+            }
+
+            if (tolower(raw) ~ /claude[^:]/) {
+              text = strip_comment(raw)
+              sub(/^[Cc][Ll][Aa][Uu][Dd][Ee] */, "", text)
               printf "%s:%d: %s\n", file, line, text
             }
           }
+          END { flush() }
         '
       )
       if [ -n "$NOTES" ]; then
@@ -77,7 +115,7 @@ case "$PWD" in
         echo "$NOTES"
         echo ""
         echo "Review these comments and ask any clarifying questions before proceeding."
-        echo "When you're done addressing a comment, remove the CLAUDE: marker from the code."
+        echo "When you're done addressing a comment, remove the claude: marker (and any continuation lines) from the code."
       fi
     fi
     ;;
